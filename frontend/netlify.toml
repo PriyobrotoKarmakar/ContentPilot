@@ -1,0 +1,24 @@
+# Netlify configuration file for ContentPilot frontend
+
+[build]
+  # Directory with the built frontend
+  publish = "/"
+  
+  # No build command since this is static HTML/CSS/JS
+  command = ""
+
+[[redirects]]
+  # Enable SPA routing
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+[[headers]]
+  # Define headers for all assets
+  for = "/*"
+    [headers.values]
+    # Enable CORS
+    Access-Control-Allow-Origin = "*"
+    # Cache control
+    Cache-Control = "public, max-age=86400"

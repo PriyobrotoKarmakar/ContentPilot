@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Generator</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link
+      rel="shortcut icon"
+      href="static/images/logo.ico"
+      type="image/x-icon"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Highlight.js CSS Theme (Choose One) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css"
+    />
+
+    <!-- Highlight.js Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll();
+    </script>
+  </head>
+  <body>
+    <!-- Video Background -->
+    <video autoplay muted loop id="background-video">
+      <source src="static/images/backgroundVideo.mp4" type="video/mp4">
+    </video>
+
+    <!-- App Header -->
+    <div class="app-header">
+      <h1 class="app-title">ContentPilot</h1>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle">
+      <svg
+        class="sun-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </svg>
+      <svg
+        class="moon-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    </button>
+
+    <div class="container">
+      <div class="chat-container">
+        <div class="user-chat-box"></div>
+
+        <div class="ai-chat-box">
+          <div class="aiImg-wrapper">
+            <img src="/static/images/Jarvis.gif" class="aiImg" alt="" />
+          </div>
+          <div class="ai-chat-area">
+            Welcome to your content assistant! 👋 I can help you generate
+            hashtags for social media, create engaging content, or design
+            thumbnail ideas. What would you like to create today?
+          </div>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <div class="input-controls">
+          <!-- Image upload button with title -->
+          <label class="image-upload-btn" id="image-upload-label">
+            <input
+              type="file"
+              id="image-upload"
+              accept="image/*"
+              style="display: none"
+            />
+            <img
+              src="static/images/image-upload-icon.svg"
+              alt="Upload Image"
+              class="btn-icon"
+            />
+            <span class="btn-title">Upload Image</span>
+          </label>
+
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="user-input"
+              class="user-input"
+              placeholder="Type your request..."
+            />
+          </div>
+
+          <!-- Thumbnail generation button with title -->
+          <button class="generate-btn thumbnail-btn" id="thumbnail-btn">
+            <img
+              src="static/images/thumbnail-icon.svg"
+              alt="Thumbnail"
+              class="btn-icon"
+            />
+            <span class="btn-title">Generate Thumbnail</span>
+          </button>
+          
+          <!-- Content generation button with title -->
+          <button class="generate-btn content-btn" id="content-btn">
+            <img
+              src="static/images/content-icon.svg"
+              alt="Content"
+              class="btn-icon"
+            />
+            <span class="btn-title">Generate Content</span>
+          </button>
+
+          <!-- Send button with title -->
+          <button class="send-btn" id="send-btn">
+            <img
+              src="static/images/send-icon.svg"
+              alt="Send"
+              class="btn-icon"
+            />
+            <span class="btn-title">Send</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer credits -->
+      <div class="footer-credits">
+        Developed by - Priyobroto Karmakar - 12300703
+      </div>
+    </div>
+    <script src="static\script.js"></script>
+  </body>
+</html>
