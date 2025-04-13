@@ -2,7 +2,7 @@
 
 [build]
   # Directory with the built frontend
-  publish = "/"
+  publish = "frontend"
   
   # No build command since this is static HTML/CSS/JS
   command = ""
