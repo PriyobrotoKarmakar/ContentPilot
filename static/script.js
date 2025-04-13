@@ -499,7 +499,7 @@ async function generateResponse(aiChatBox, imageToProcess) {
       // First try local endpoint if in development
       isLocalDevelopment ? "http://127.0.0.1:5000" : null,
       // Then try production endpoint
-      "https://content-pilot-production-66f7.up.railway.app",
+      "https://content-pilot.onrender.com",
       // Fallback to local endpoint even in production if Railway is down
       "http://127.0.0.1:5000"
     ].filter(Boolean); // Remove null values
