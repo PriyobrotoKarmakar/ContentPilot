@@ -494,11 +494,16 @@ async function generateResponse(aiChatBox, imageToProcess) {
       window.location.hostname.startsWith("172.") ||
       window.location.hostname.startsWith("192.168.");
 
-    // Use local API endpoint when in development mode, Railway URL in production
-    const API_BASE_URL = isLocalDevelopment
-      ? "" // Empty string for same-origin requests in local development
-      : "https://content-creation-helper-tool-production.up.railway.app";
-
+    // Define possible API endpoints to try
+    const API_ENDPOINTS = [
+      // First try local endpoint if in development
+      isLocalDevelopment ? "http://127.0.0.1:5000" : null,
+      // Then try production endpoint
+      "https://content-pilot-production-66f7.up.railway.app",
+      // Fallback to local endpoint even in production if Railway is down
+      "http://127.0.0.1:5000"
+    ].filter(Boolean); // Remove null values
+    
     let endpoint = "/generate_hashtags"; // Default endpoint
     let responseTypeText = "Generating hashtags...";
 
@@ -515,20 +520,46 @@ async function generateResponse(aiChatBox, imageToProcess) {
     // Update loading message
     aiChatArea.innerHTML = responseTypeText;
 
-    let response = await fetch(API_BASE_URL + endpoint, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `HTTP error! status: ${response.status}, message: ${errorText}`
-      );
+    // Try each API endpoint until one works
+    let response = null;
+    let lastError = null;
+    
+    for (const baseUrl of API_ENDPOINTS) {
+      const fullUrl = baseUrl + endpoint;
+      console.log(`Attempting to connect to: ${fullUrl}`);
+      
+      try {
+        response = await fetch(fullUrl, {
+          method: "POST",
+          body: formData,
+          // Add these options to help with CORS issues
+          mode: 'cors',
+          credentials: 'same-origin'
+        });
+        
+        console.log(`Response status: ${response.status}`);
+        
+        if (response.ok) {
+          // We got a successful response, break the loop
+          break;
+        } else {
+          lastError = new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (error) {
+        console.log(`Connection failed to ${fullUrl}: ${error.message}`);
+        lastError = error;
+        // Continue to the next endpoint
+      }
+    }
+    
+    if (!response || !response.ok) {
+      // If we exhausted all endpoints and none worked
+      throw lastError || new Error('Failed to connect to any API endpoint');
     }
 
     const data = await response.json();
-
+    console.log("Response data received successfully");
+    
     // Handle different types of responses based on the mode
     if (contentModeActive && data.content) {
       // Store original content for copying

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: content-pilot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STABILITY_API_KEY
+        sync: false

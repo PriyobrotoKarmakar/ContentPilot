@@ -494,11 +494,16 @@ async function generateResponse(aiChatBox, imageToProcess) {
       window.location.hostname.startsWith("172.") ||
       window.location.hostname.startsWith("192.168.");
 
-    // Use local API endpoint when in development mode, Railway URL in production
-    const API_BASE_URL = isLocalDevelopment
-      ? "" // Empty string for same-origin requests in local development
-      : "https://content-pilot-production.up.railway.app"; // Correct Railway domain format
-
+    // Define possible API endpoints to try
+    const API_ENDPOINTS = [
+      // First try local endpoint if in development
+      isLocalDevelopment ? "http://127.0.0.1:5000" : null,
+      // Then try production endpoint
+      "https://content-pilot-production-66f7.up.railway.app",
+      // Fallback to local endpoint even in production if Railway is down
+      "http://127.0.0.1:5000"
+    ].filter(Boolean); // Remove null values
+    
     let endpoint = "/generate_hashtags"; // Default endpoint
     let responseTypeText = "Generating hashtags...";
 
@@ -515,191 +520,196 @@ async function generateResponse(aiChatBox, imageToProcess) {
     // Update loading message
     aiChatArea.innerHTML = responseTypeText;
 
-    // Debug log - display API endpoint being called
-    console.log(`Attempting to connect to: ${API_BASE_URL + endpoint}`);
-
-    try {
-      let response = await fetch(API_BASE_URL + endpoint, {
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          // Don't set Content-Type when sending FormData
-        },
-        body: formData,
-        // Add these options to help with CORS issues
-        mode: 'cors',
-        credentials: 'same-origin'
-      });
+    // Try each API endpoint until one works
+    let response = null;
+    let lastError = null;
+    
+    for (const baseUrl of API_ENDPOINTS) {
+      const fullUrl = baseUrl + endpoint;
+      console.log(`Attempting to connect to: ${fullUrl}`);
       
-      console.log(`Response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorText}`
-        );
+      try {
+        response = await fetch(fullUrl, {
+          method: "POST",
+          body: formData,
+          // Add these options to help with CORS issues
+          mode: 'cors',
+          credentials: 'same-origin'
+        });
+        
+        console.log(`Response status: ${response.status}`);
+        
+        if (response.ok) {
+          // We got a successful response, break the loop
+          break;
+        } else {
+          lastError = new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (error) {
+        console.log(`Connection failed to ${fullUrl}: ${error.message}`);
+        lastError = error;
+        // Continue to the next endpoint
       }
+    }
+    
+    if (!response || !response.ok) {
+      // If we exhausted all endpoints and none worked
+      throw lastError || new Error('Failed to connect to any API endpoint');
+    }
 
-      const data = await response.json();
-      console.log("Response data received successfully");
-      
-      // Handle different types of responses based on the mode
-      if (contentModeActive && data.content) {
-        // Store original content for copying
-        const originalContent = data.content;
+    const data = await response.json();
+    console.log("Response data received successfully");
+    
+    // Handle different types of responses based on the mode
+    if (contentModeActive && data.content) {
+      // Store original content for copying
+      const originalContent = data.content;
 
-        // Parse markdown for content generation
-        const formattedContent = parseMarkdown(data.content);
+      // Parse markdown for content generation
+      const formattedContent = parseMarkdown(data.content);
 
-        // Display generated content
-        const contentHTML = `
-          <div class="content-container">
-            <div class="content-header">
-              <div class="content-title">Generated Content</div>
-              <button class="content-copy-btn" onclick="copyContent(${chatId}, true)">
+      // Display generated content
+      const contentHTML = `
+        <div class="content-container">
+          <div class="content-header">
+            <div class="content-title">Generated Content</div>
+            <button class="content-copy-btn" onclick="copyContent(${chatId}, true)">
+              <img src="static/images/copy-selected-icon.svg" class="copy-btn-icon" alt="Copy">
+              Copy
+            </button>
+          </div>
+          <div class="content-text" id="content-text-${chatId}" data-original-content="${encodeURIComponent(
+        originalContent
+      )}">${formattedContent}</div>
+        </div>
+      `;
+      aiChatArea.innerHTML = contentHTML;
+    } else if (thumbnailModeActive && data.prompt) {
+      // Store original prompt for copying
+      const originalPrompt = data.prompt;
+
+      // Check if image generation was successful
+      if (data.success && data.image) {
+        // Display only the generated image when successful
+        const thumbnailHTML = `
+          <div class="thumbnail-container">
+            <div class="thumbnail-header">
+              <div class="thumbnail-title">Generated Thumbnail</div>
+              <div class="thumbnail-buttons">
+                <button class="download-btn" onclick="downloadImage('${
+                  data.image
+                }', 'thumbnail-${Date.now()}.png')">
+                  <img src="static/images/download-icon.svg" class="copy-btn-icon" alt="Download">
+                  Download
+                </button>
+              </div>
+            </div>
+            <div class="thumbnail-preview">
+              <img src="data:image/png;base64,${
+                data.image
+              }" alt="Generated Thumbnail" class="thumbnail-image">
+            </div>
+          </div>
+        `;
+        aiChatArea.innerHTML = thumbnailHTML;
+        chatContainer.scrollTo({
+          top: chatContainer.scrollHeight,
+          behavior: "smooth",
+        });
+      } else {
+        // Display only prompt if image generation failed
+        const thumbnailHTML = `
+          <div class="thumbnail-container">
+            <div class="thumbnail-header">
+              <div class="thumbnail-title">Thumbnail Prompt</div>
+              <button class="content-copy-btn" onclick="copyContent(${chatId}, false)">
                 <img src="static/images/copy-selected-icon.svg" class="copy-btn-icon" alt="Copy">
-                Copy
+                Copy Prompt
               </button>
             </div>
             <div class="content-text" id="content-text-${chatId}" data-original-content="${encodeURIComponent(
-          originalContent
-        )}">${formattedContent}</div>
+          originalPrompt
+        )}">
+              ${data.prompt.replace(/\n/g, "<br>")}
+            </div>
+            <div class="thumbnail-message">${
+              data.message ||
+              "Image generation failed. You can use this prompt with another tool."
+            }</div>
           </div>
         `;
-        aiChatArea.innerHTML = contentHTML;
-      } else if (thumbnailModeActive && data.prompt) {
-        // Store original prompt for copying
-        const originalPrompt = data.prompt;
-
-        // Check if image generation was successful
-        if (data.success && data.image) {
-          // Display only the generated image when successful
-          const thumbnailHTML = `
-            <div class="thumbnail-container">
-              <div class="thumbnail-header">
-                <div class="thumbnail-title">Generated Thumbnail</div>
-                <div class="thumbnail-buttons">
-                  <button class="download-btn" onclick="downloadImage('${
-                    data.image
-                  }', 'thumbnail-${Date.now()}.png')">
-                    <img src="static/images/download-icon.svg" class="copy-btn-icon" alt="Download">
-                    Download
-                  </button>
-                </div>
-              </div>
-              <div class="thumbnail-preview">
-                <img src="data:image/png;base64,${
-                  data.image
-                }" alt="Generated Thumbnail" class="thumbnail-image">
-              </div>
-            </div>
-          `;
-          aiChatArea.innerHTML = thumbnailHTML;
-          chatContainer.scrollTo({
-            top: chatContainer.scrollHeight,
-            behavior: "smooth",
-          });
-        } else {
-          // Display only prompt if image generation failed
-          const thumbnailHTML = `
-            <div class="thumbnail-container">
-              <div class="thumbnail-header">
-                <div class="thumbnail-title">Thumbnail Prompt</div>
-                <button class="content-copy-btn" onclick="copyContent(${chatId}, false)">
-                  <img src="static/images/copy-selected-icon.svg" class="copy-btn-icon" alt="Copy">
-                  Copy Prompt
-                </button>
-              </div>
-              <div class="content-text" id="content-text-${chatId}" data-original-content="${encodeURIComponent(
-            originalPrompt
-          )}">
-                ${data.prompt.replace(/\n/g, "<br>")}
-              </div>
-              <div class="thumbnail-message">${
-                data.message ||
-                "Image generation failed. You can use this prompt with another tool."
-              }</div>
-            </div>
-          `;
-          aiChatArea.innerHTML = thumbnailHTML;
-          chatContainer.scrollTo({
-            top: chatContainer.scrollHeight,
-            behavior: "smooth",
-          });
-        }
-      } else if (data.hashtags) {
-        // This is the hashtag generation mode - use existing code
-        // Generate random post counts for each hashtag
-        const hashtagsWithCounts = data.hashtags
-          .map((tag) => {
-            const cleanTag = tag.trim();
-            const formattedTag = cleanTag.startsWith("#")
-              ? cleanTag
-              : `#${cleanTag}`;
-
-            // Skip empty tags
-            if (formattedTag === "#") return null;
-
-            // Generate a random post count (in a real app, this would come from the API)
-            const randomCount = Math.floor(Math.random() * 50) + 1;
-            const displayCount =
-              randomCount < 10
-                ? `${randomCount}M posts`
-                : randomCount < 30
-                ? `${randomCount}K posts`
-                : `${randomCount * 100}K posts`;
-
-            return {
-              tag: formattedTag,
-              postCount: displayCount,
-            };
-          })
-          .filter((item) => item !== null);
-
-        // Create buttons for each hashtag
-        let hashtagsHTML = hashtagsWithCounts
-          .map((item) => {
-            return `<button class="hashtag-btn" data-tag="${item.tag}" data-post-count="${item.postCount}" onclick="toggleHashtag(this, ${chatId})">${item.tag}</button>`;
-          })
-          .join(" ");
-
-        let HTML = `<div class="hashtags-container" data-chat-id="${chatId}">
-          <b>Generated Hashtags:</b><br>
-          
-          <div class="hashtags-buttons">
-            ${hashtagsHTML}
-          </div>
-          
-          <div class="copy-buttons">
-            <button class="copy-selected-btn" onclick="copySelectedHashtags(${chatId})">
-              <img src="static/images/copy-selected-icon.svg" class="copy-btn-icon" alt="Copy">
-              Copy Selected
-            </button>
-            <button class="copy-all-btn" onclick="copyAllHashtags(${chatId})">
-              <img src="static/images/copy-all-icon.svg" class="copy-btn-icon" alt="Copy">
-              Copy All
-            </button>
-          </div>
-          
-          <div class="selected-hashtags-area">
-            <textarea class="selected-hashtags" placeholder="Select hashtags to see them here..." readonly></textarea>
-          </div>
-        </div>`;
-
-        aiChatArea.innerHTML = HTML;
+        aiChatArea.innerHTML = thumbnailHTML;
+        chatContainer.scrollTo({
+          top: chatContainer.scrollHeight,
+          behavior: "smooth",
+        });
       }
+    } else if (data.hashtags) {
+      // This is the hashtag generation mode - use existing code
+      // Generate random post counts for each hashtag
+      const hashtagsWithCounts = data.hashtags
+        .map((tag) => {
+          const cleanTag = tag.trim();
+          const formattedTag = cleanTag.startsWith("#")
+            ? cleanTag
+            : `#${cleanTag}`;
 
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    } catch (error) {
-      aiChatArea.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight,
-        behavior: "smooth",
-      });
+          // Skip empty tags
+          if (formattedTag === "#") return null;
+
+          // Generate a random post count (in a real app, this would come from the API)
+          const randomCount = Math.floor(Math.random() * 50) + 1;
+          const displayCount =
+            randomCount < 10
+              ? `${randomCount}M posts`
+              : randomCount < 30
+              ? `${randomCount}K posts`
+              : `${randomCount * 100}K posts`;
+
+          return {
+            tag: formattedTag,
+            postCount: displayCount,
+          };
+        })
+        .filter((item) => item !== null);
+
+      // Create buttons for each hashtag
+      let hashtagsHTML = hashtagsWithCounts
+        .map((item) => {
+          return `<button class="hashtag-btn" data-tag="${item.tag}" data-post-count="${item.postCount}" onclick="toggleHashtag(this, ${chatId})">${item.tag}</button>`;
+        })
+        .join(" ");
+
+      let HTML = `<div class="hashtags-container" data-chat-id="${chatId}">
+        <b>Generated Hashtags:</b><br>
+        
+        <div class="hashtags-buttons">
+          ${hashtagsHTML}
+        </div>
+        
+        <div class="copy-buttons">
+          <button class="copy-selected-btn" onclick="copySelectedHashtags(${chatId})">
+            <img src="static/images/copy-selected-icon.svg" class="copy-btn-icon" alt="Copy">
+            Copy Selected
+          </button>
+          <button class="copy-all-btn" onclick="copyAllHashtags(${chatId})">
+            <img src="static/images/copy-all-icon.svg" class="copy-btn-icon" alt="Copy">
+            Copy All
+          </button>
+        </div>
+        
+        <div class="selected-hashtags-area">
+          <textarea class="selected-hashtags" placeholder="Select hashtags to see them here..." readonly></textarea>
+        </div>
+      </div>`;
+
+      aiChatArea.innerHTML = HTML;
     }
+
+    chatContainer.scrollTo({
+      top: chatContainer.scrollHeight,
+      behavior: "smooth",
+    });
   } finally {
     // Clear user data
     user.message = "";
