@@ -1,14 +1,21 @@
-[build]
-  publish = "/"
-  command = ""
+# Netlify configuration file
 
+[build]
+  publish = "."  # Publish from the root of the frontend folder
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    
+    # Prevent browser zoom
+    Content-Security-Policy = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https:; img-src 'self' data: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:;"
+
+# Redirect all requests to index.html for SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-[[headers]]
-  for = "/*"
-    [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Cache-Control = "public, max-age=86400"
