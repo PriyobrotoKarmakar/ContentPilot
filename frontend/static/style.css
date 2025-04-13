@@ -183,6 +183,33 @@ body::before {
 
 /* Adjust container padding to accommodate the header */
 .container {
+  padding: 0 30px 2px 30px;
+}
+
+/* Responsive adjustments for the header */
+@media (max-width: 768px) {
+  .app-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .app-title {
+    font-size: 2rem;
+  }
+  .container {
+    padding: 0 30px 2px 30px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-title {
+    font-size: 1.8rem;
+  }
+}
+
+/* ========== CHAT CONTAINER ========== */
+.container {
   width: 100%;
   /* max-width: 1400px; */
   height: calc(100vh - 10px);
