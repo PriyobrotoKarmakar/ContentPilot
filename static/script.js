@@ -56,15 +56,6 @@ imageUpload.addEventListener("change", function (event) {
     if (!previewContainer) {
       previewContainer = document.createElement("div");
       previewContainer.className = "image-preview-container";
-      previewContainer.style.cssText = `
-        position: fixed;
-        bottom: 90px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.6);
-        border-radius: 10px;
-        padding: 10px;
-        z-index: 1000;
-      `;
       document.body.appendChild(previewContainer);
     }
 
@@ -501,9 +492,9 @@ async function generateResponse(aiChatBox, imageToProcess) {
       // Then try production endpoint
       "https://content-pilot.onrender.com",
       // Fallback to local endpoint even in production if Railway is down
-      "http://127.0.0.1:5000"
+      "http://127.0.0.1:5000",
     ].filter(Boolean); // Remove null values
-    
+
     let endpoint = "/generate_hashtags"; // Default endpoint
     let responseTypeText = "Generating hashtags...";
 
@@ -523,22 +514,22 @@ async function generateResponse(aiChatBox, imageToProcess) {
     // Try each API endpoint until one works
     let response = null;
     let lastError = null;
-    
+
     for (const baseUrl of API_ENDPOINTS) {
       const fullUrl = baseUrl + endpoint;
       console.log(`Attempting to connect to: ${fullUrl}`);
-      
+
       try {
         response = await fetch(fullUrl, {
           method: "POST",
           body: formData,
           // Add these options to help with CORS issues
-          mode: 'cors',
-          credentials: 'same-origin'
+          mode: "cors",
+          credentials: "same-origin",
         });
-        
+
         console.log(`Response status: ${response.status}`);
-        
+
         if (response.ok) {
           // We got a successful response, break the loop
           break;
@@ -551,15 +542,15 @@ async function generateResponse(aiChatBox, imageToProcess) {
         // Continue to the next endpoint
       }
     }
-    
+
     if (!response || !response.ok) {
       // If we exhausted all endpoints and none worked
-      throw lastError || new Error('Failed to connect to any API endpoint');
+      throw lastError || new Error("Failed to connect to any API endpoint");
     }
 
     const data = await response.json();
     console.log("Response data received successfully");
-    
+
     // Handle different types of responses based on the mode
     if (contentModeActive && data.content) {
       // Store original content for copying
