@@ -16,11 +16,11 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 load_dotenv()
 
-# Configure Gemini API
+# Configure Gemini API - Updated to use Gemini 2.0 Flash
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-2.0-flash-001')
 
-# Configure Stability AI API
+# Configure Stability AI API - Reverted to original endpoint
 STABILITY_API_KEY = os.getenv('STABILITY_API_KEY')
 STABILITY_API_URL = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
 
@@ -124,16 +124,23 @@ def generate_content_from_image(image_bytes, mime_type, topic_text='', platform=
 
 
 def generate_thumbnail_prompt(topic_text):
-    """Generate a detailed thumbnail image prompt based on topic."""
-    prompt = f"""Create a detailed prompt for generating a thumbnail image about: {topic_text}.
-    The prompt should describe a visually appealing, high-quality image that would work well as a 
-    YouTube or blog thumbnail. Include details about composition, colors, style, mood, and subject.
-    Make it highly detailed and specific for image generation.
-    Keep the description focused and concise (80-120 words).
+    """Generate a concise but effective thumbnail image prompt based on topic."""
+    prompt = f"""Create a prompt for generating a YouTube/blog thumbnail image about: {topic_text}.
+    The prompt must be under 200 characters total.
+    Focus on key visual elements, composition, lighting, and style.
+    Describe a professional, eye-catching image with clear focal points.
+    Do not use hashtags or formatting symbols.
     """
     
     response = model.generate_content(prompt)
-    return response.text.strip() if response.text else ""
+    generated_prompt = response.text.strip() if response.text else ""
+    
+    # Ensure the prompt doesn't exceed character limit
+    if len(generated_prompt) > 250:
+        # If too long, truncate and ensure it ends with a complete sentence
+        generated_prompt = generated_prompt[:247] + "..."
+    
+    return generated_prompt
 
 
 @app.route('/')
