@@ -1,24 +1,21 @@
-# Netlify configuration file for ContentPilot frontend
+# Netlify configuration file
 
 [build]
-  # Directory with the built frontend
-  publish = "/"
-  
-  # No build command since this is static HTML/CSS/JS
-  command = ""
+  publish = "."  # Publish from the root of the frontend folder
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    
+    # Prevent browser zoom
+    Content-Security-Policy = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https:; img-src 'self' data: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:;"
+
+# Redirect all requests to index.html for SPA
 [[redirects]]
-  # Enable SPA routing
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
-
-[[headers]]
-  # Define headers for all assets
-  for = "/*"
-    [headers.values]
-    # Enable CORS
-    Access-Control-Allow-Origin = "*"
-    # Cache control
-    Cache-Control = "public, max-age=86400"

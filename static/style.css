@@ -783,7 +783,7 @@ body::before {
 /* ========== RESPONSIVE DESIGN ========== */
 /* Large devices (desktops, 1024px and up) */
 @media (min-width: 1024px) {
-  container {
+  .container {
     padding: 0 30px 2px 30px;
   }
 
@@ -848,12 +848,13 @@ body::before {
   .thumbnail-title {
     font-size: 20px;
   }
+  
 }
 
 /* Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) and (max-width: 1023px) {
   .container {
-    padding: 25px 20px;
+    padding: 0 30px 2px 30px;
   }
 
   .chat-container {
@@ -877,12 +878,24 @@ body::before {
   .btn-title {
     display: none;
   }
+  .theme-toggle {
+    top: 50px;
+    right: 30px;
+    width: 36px;
+    height: 36px;
+  }
 }
 
 /* Small devices (landscape phones, 576px and up) */
 @media (min-width: 576px) and (max-width: 767px) {
   .container {
-    padding: 20px 15px;
+    padding: 0 30px 2px 30px;
+  }
+  .theme-toggle {
+    top: 62px;
+    right: 30px;
+    width: 36px;
+    height: 36px;
   }
 
   .chat-container {
@@ -957,7 +970,7 @@ body::before {
 /* Extra small devices (phones, less than 576px) */
 @media (max-width: 575px) {
   .container {
-    padding: 15px 10px;
+    padding: 0 30px 2px 30px;
   }
 
   .chat-container {
@@ -1122,8 +1135,8 @@ body::before {
   }
 
   .theme-toggle {
-    top: 70px;
-    right: 15px;
+    top: 50px;
+    right: 30px;
     width: 36px;
     height: 36px;
   }
@@ -1207,4 +1220,5 @@ body::before {
     max-width: 100%;
     height: auto;
   }
+  
 }
