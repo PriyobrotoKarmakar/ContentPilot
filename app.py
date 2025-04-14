@@ -100,6 +100,7 @@ def generate_content_from_text(topic_text, platform='linkedin'):
     The post should be engaging, professional, and optimized to reach a wide audience.
     Include relevant emojis, line breaks, and formatting for maximum impact.
     The post should be between 150-300 words.
+    DO NOT include any meta-commentary about the post itself. DO NOT add notes or explanations at the end.
     """
     
     response = model.generate_content(prompt)
@@ -115,6 +116,7 @@ def generate_content_from_image(image_bytes, mime_type, topic_text='', platform=
     The post should be engaging, professional, and optimized to reach a wide audience.
     Include relevant emojis, line breaks, and formatting for maximum impact.
     The post should be between 150-300 words.
+    DO NOT include any meta-commentary about the post itself. DO NOT add notes or explanations at the end.
     """
     
     response = model.generate_content([prompt, image_part])
