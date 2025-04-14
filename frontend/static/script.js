@@ -70,7 +70,7 @@ imageUpload.addEventListener("change", function (event) {
     reader.readAsDataURL(file);
 
     // Update upload button style
-    imageUploadLabel.style.background = "rgba(79, 70, 229, 0.8)";
+    imageUploadLabel.style.background = "#DE3163";
   }
 });
 
@@ -82,7 +82,7 @@ function removeImage() {
   if (previewContainer) {
     previewContainer.remove();
   }
-  imageUploadLabel.style.background = "rgba(79, 70, 229, 0.4)";
+  imageUploadLabel.style.background = "rgba(79, 70, 229, 0.5)";
 }
 
 // Handle Enter key press

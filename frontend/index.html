@@ -2,9 +2,9 @@
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Content Pilot</title>
-    <link rel="stylesheet" href="static/style.css" />
+    <link rel="stylesheet" href="/static/style.css" />
     <link
       rel="shortcut icon"
       href="static/images/logo.ico"
@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Highlight.js CSS Theme -->
+    <!-- Highlight.js CSS Theme (Choose One) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css"
@@ -24,14 +24,6 @@
     <script>
       hljs.highlightAll();
     </script>
-    <!-- Additional style to prevent unwanted zooming -->
-    <style>
-      html {
-        touch-action: manipulation;
-        -ms-touch-action: manipulation;
-        -webkit-text-size-adjust: none;
-      }
-    </style>
   </head>
   <body>
     <!-- Video Background -->
@@ -99,7 +91,7 @@
       <div class="input-container">
         <div class="input-controls">
           <!-- Image upload button with title -->
-          <label class="image-upload-btn" id="image-upload-label">
+          <label class="image-upload-btn" id="image-upload-label" style="background: rgba(79, 70, 229, 0.5);">
             <input
               type="file"
               id="image-upload"
@@ -111,6 +103,7 @@
               alt="Upload Image"
               class="btn-icon"
             />
+            
             <span class="btn-title">Upload Image</span>
           </label>
 
