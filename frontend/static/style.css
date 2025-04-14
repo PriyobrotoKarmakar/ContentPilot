@@ -970,12 +970,14 @@ body::before {
 /* Extra small devices (phones, less than 576px) */
 @media (max-width: 575px) {
   .container {
-    padding: 0 30px 2px 30px;
+    padding: 0 10px 2px 10px;
   }
 
   .chat-container {
-    padding: 15px 8px;
+    padding: 1px 8px;
     border-radius: 15px;
+    margin-bottom: 10px;
+    max-height: calc(100vh - 17px);
   }
 
   .user-chat-box,
@@ -1136,7 +1138,7 @@ body::before {
 
   .theme-toggle {
     top: 50px;
-    right: 30px;
+    right: 10px;
     width: 36px;
     height: 36px;
   }
