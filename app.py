@@ -16,9 +16,38 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 load_dotenv()
 
-# Configure Gemini API - Updated to use Gemini 2.0 Flash
+# Configure Gemini API with multiple models for fallback
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-model = genai.GenerativeModel('gemini-2.0-flash-001')
+GEMINI_MODELS = [
+    'gemini-2.0-flash-001',  # Primary model
+    'gemini-2.0-flash-002',  # Fallback 1
+    'gemini-pro',            # Fallback 2
+]
+
+def try_gemini_request(prompt, image_part=None):
+    """Try multiple Gemini models with fallback mechanism."""
+    last_error = None
+    
+    for model_name in GEMINI_MODELS:
+        try:
+            model = genai.GenerativeModel(model_name)
+            if image_part:
+                response = model.generate_content([prompt, image_part])
+            else:
+                response = model.generate_content(prompt)
+            return response.text.strip() if response.text else ""
+        except Exception as e:
+            error_msg = str(e).lower()
+            last_error = e
+            
+            # Check if error is quota/rate limit related
+            if any(msg in error_msg for msg in ['quota', 'rate limit', '503', 'overload']):
+                continue  # Try next model
+            else:
+                raise e  # Re-raise if it's not a quota/rate issue
+    
+    # If all models failed
+    raise Exception(f"All Gemini models failed. Last error: {str(last_error)}")
 
 # Configure Stability AI API - Reverted to original endpoint
 STABILITY_API_KEY = os.getenv('STABILITY_API_KEY')
@@ -82,16 +111,14 @@ def generate_gemini_hashtags_from_bytes(image_bytes, mime_type):
     image_part = {"mime_type": mime_type, "data": image_bytes}
     prompt = "Generate exactly 30 relevant hashtags for this image, separated by commas."
     
-    response = model.generate_content([prompt, image_part])
-    return response.text.strip() if response.text else ""
+    return try_gemini_request(prompt, image_part)
 
 
 def generate_gemini_hashtags_from_text(topic_text):
     """Generate 30 relevant hashtags for the given topic text."""
     prompt = f"Generate exactly 30 relevant hashtags for the topic: {topic_text}. Return them separated by commas."
     
-    response = model.generate_content(prompt)
-    return response.text.strip() if response.text else ""
+    return try_gemini_request(prompt)
 
 
 def generate_content_from_text(topic_text, platform='linkedin'):
@@ -103,8 +130,7 @@ def generate_content_from_text(topic_text, platform='linkedin'):
     DO NOT include any meta-commentary about the post itself. DO NOT add notes or explanations at the end.
     """
     
-    response = model.generate_content(prompt)
-    return response.text.strip() if response.text else ""
+    return try_gemini_request(prompt)
 
 
 def generate_content_from_image(image_bytes, mime_type, topic_text='', platform='linkedin'):
@@ -119,8 +145,7 @@ def generate_content_from_image(image_bytes, mime_type, topic_text='', platform=
     DO NOT include any meta-commentary about the post itself. DO NOT add notes or explanations at the end.
     """
     
-    response = model.generate_content([prompt, image_part])
-    return response.text.strip() if response.text else ""
+    return try_gemini_request(prompt, image_part)
 
 
 def generate_thumbnail_prompt(topic_text):
@@ -132,8 +157,7 @@ def generate_thumbnail_prompt(topic_text):
     Do not use hashtags or formatting symbols.
     """
     
-    response = model.generate_content(prompt)
-    generated_prompt = response.text.strip() if response.text else ""
+    generated_prompt = try_gemini_request(prompt)
     
     # Ensure the prompt doesn't exceed character limit
     if len(generated_prompt) > 250:
