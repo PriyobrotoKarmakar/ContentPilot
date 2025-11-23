@@ -173,6 +173,16 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for UptimeRobot monitoring to keep Render active."""
+    return jsonify({
+        'status': 'healthy',
+        'message': 'ContentPilot is running',
+        'service': 'content-pilot'
+    }), 200
+
+
 @app.route('/generate_hashtags', methods=['POST'])
 def generate_hashtags():
     """Handle hashtag generation from uploaded image."""
