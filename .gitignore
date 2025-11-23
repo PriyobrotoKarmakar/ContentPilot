@@ -10,6 +10,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#test files
+test_api.py
+
 # Virtual Environment
 .venv
 venv/
@@ -19,6 +22,7 @@ ENV/
 # Flask
 instance/
 .webassets-cache
+
 
 # Distribution / packaging
 dist/

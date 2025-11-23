@@ -19,9 +19,9 @@ load_dotenv()
 # Configure Gemini API with multiple models for fallback
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 GEMINI_MODELS = [
-    'gemini-2.0-flash-001',  # Primary model
-    'gemini-2.0-flash-002',  # Fallback 1
-    'gemini-pro',            # Fallback 2
+    'gemini-2.0-flash-lite',  # Primary model
+    'gemini-2.0-flash',  # Fallback 1
+    'gemini-2.5-flash-lite',            # Fallback 2
 ]
 
 def try_gemini_request(prompt, image_part=None):
